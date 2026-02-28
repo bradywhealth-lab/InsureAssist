@@ -10,6 +10,8 @@ const preferencesRouter = require("./routes/preferences");
 const leadsRouter = require("./routes/leads");
 const campaignsRouter = require("./routes/campaigns");
 const integrationsRouter = require("./routes/integrations");
+const socialRouter = require("./routes/social");
+const assistantRouter = require("./routes/assistant");
 
 function createApp() {
   const app = express();
@@ -65,6 +67,8 @@ function createApp() {
   app.use(leadsRouter);
   app.use(campaignsRouter);
   app.use(integrationsRouter);
+  app.use(socialRouter);
+  app.use(assistantRouter);
 
   // ── 404 catch-all ────────────────────────────────────────────────────────
   app.use((req, res) => {
