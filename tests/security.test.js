@@ -23,6 +23,25 @@ describe("Security headers (Helmet)", () => {
   });
 });
 
+describe("Cache-Control", () => {
+  let app;
+  beforeAll(() => {
+    app = createApp();
+  });
+
+  it("sets Cache-Control: no-store on all API responses", async () => {
+    for (const path of ["/health", "/api/user/preferences", "/leads"]) {
+      const res = await request(app).get(path);
+      expect(res.headers["cache-control"]).toBe("no-store");
+    }
+  });
+
+  it("sets Pragma: no-cache on all API responses", async () => {
+    const res = await request(app).get("/api/user/preferences");
+    expect(res.headers["pragma"]).toBe("no-cache");
+  });
+});
+
 describe("Request ID", () => {
   let app;
   beforeAll(() => {
@@ -62,6 +81,21 @@ describe("404 catch-all", () => {
     const res = await request(app).post("/no-such-endpoint").send({});
     expect(res.status).toBe(404);
   });
+
+  it("sanitizes special characters from the path in error messages", async () => {
+    const res = await request(app).get("/<script>alert(1)</script>");
+    expect(res.status).toBe(404);
+    // The reflected path should NOT contain angle brackets or parens
+    expect(res.body.error).not.toMatch(/[<>()]/);
+  });
+
+  it("truncates very long paths in error messages", async () => {
+    const longPath = "/" + "a".repeat(200);
+    const res = await request(app).get(longPath);
+    expect(res.status).toBe(404);
+    // Path in error should be capped at 100 chars
+    expect(res.body.error.length).toBeLessThan(200);
+  });
 });
 
 describe("Request body size limit", () => {
@@ -99,5 +133,41 @@ describe("CORS headers", () => {
   it("exposes X-Request-Id in Access-Control-Expose-Headers", async () => {
     const res = await request(app).get("/health");
     expect(res.headers["access-control-expose-headers"]).toContain("X-Request-Id");
+  });
+});
+
+describe("Auth token endpoint security", () => {
+  it("never leaks the real API_KEY in token response", async () => {
+    process.env.API_KEY = "super-secret-production-key";
+    const app = createApp();
+    const res = await request(app)
+      .post("/api/auth/token")
+      .send({ username: "admin", password: "pass" });
+    expect(res.status).toBe(200);
+    expect(res.body.token).not.toBe("super-secret-production-key");
+    expect(res.body.token).not.toContain("super-secret");
+  });
+});
+
+describe("PII protection on public endpoints", () => {
+  let app;
+  beforeAll(() => {
+    app = createApp();
+  });
+
+  it("does not expose email or phone on /leads", async () => {
+    const res = await request(app).get("/leads?limit=10");
+    for (const lead of res.body.data) {
+      expect(lead.email).toBeUndefined();
+      expect(lead.phone).toBeUndefined();
+    }
+  });
+
+  it("does not expose email or phone on /v1/leads", async () => {
+    const res = await request(app).get("/v1/leads?limit=10");
+    for (const lead of res.body.data) {
+      expect(lead.email).toBeUndefined();
+      expect(lead.phone).toBeUndefined();
+    }
   });
 });

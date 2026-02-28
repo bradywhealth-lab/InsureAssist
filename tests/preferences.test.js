@@ -45,9 +45,27 @@ describe("Preferences API", () => {
     it("persists across subsequent GET requests", async () => {
       await request(app)
         .post("/api/user/preferences")
-        .send({ preferences: { onlysales_api_key: "sk-abc" } });
+        .send({ preferences: { auto_sync_leads: false } });
       const get = await request(app).get("/api/user/preferences");
-      expect(get.body.preferences.onlysales_api_key).toBe("sk-abc");
+      expect(get.body.preferences.auto_sync_leads).toBe(false);
+    });
+
+    it("masks the onlysales_api_key in GET responses", async () => {
+      await request(app)
+        .post("/api/user/preferences")
+        .send({ preferences: { onlysales_api_key: "sk-secret-key-12345" } });
+      const get = await request(app).get("/api/user/preferences");
+      // Key should be masked — last 4 chars visible, rest replaced with *
+      expect(get.body.preferences.onlysales_api_key).not.toBe("sk-secret-key-12345");
+      expect(get.body.preferences.onlysales_api_key).toMatch(/\*+2345$/);
+    });
+
+    it("masks the onlysales_api_key in POST responses", async () => {
+      const res = await request(app)
+        .post("/api/user/preferences")
+        .send({ preferences: { onlysales_api_key: "sk-another-key" } });
+      expect(res.body.preferences.onlysales_api_key).not.toBe("sk-another-key");
+      expect(res.body.preferences.onlysales_api_key).toMatch(/\*+-key$/);
     });
 
     it("rejects body missing the preferences key — 400", async () => {

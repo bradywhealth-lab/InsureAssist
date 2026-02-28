@@ -90,13 +90,15 @@ describe("POST /api/auth/token", () => {
     expect(res.body.token).toBe("mock-dev-token");
   });
 
-  it("returns the configured API_KEY as the token", async () => {
+  it("does NOT return the raw API_KEY when one is configured", async () => {
     process.env.API_KEY = "configured-key";
     app = createApp();
     const res = await request(app)
       .post("/api/auth/token")
       .send({ username: "u", password: "p" });
-    expect(res.body.token).toBe("configured-key");
+    expect(res.body.token).not.toBe("configured-key");
+    expect(typeof res.body.token).toBe("string");
+    expect(res.body.token.length).toBeGreaterThan(0);
   });
 
   it("rejects missing username — 400", async () => {

@@ -215,5 +215,18 @@ describe("Leads API", () => {
       const res = await request(localApp).get("/leads");
       expect(res.status).toBe(200);
     });
+
+    it("strips PII (email and phone) from public response", async () => {
+      const res = await request(app).get("/leads?limit=3");
+      expect(res.status).toBe(200);
+      for (const lead of res.body.data) {
+        expect(lead.email).toBeUndefined();
+        expect(lead.phone).toBeUndefined();
+        // Non-PII fields should still be present
+        expect(lead.id).toBeDefined();
+        expect(lead.name).toBeDefined();
+        expect(lead.status).toBeDefined();
+      }
+    });
   });
 });

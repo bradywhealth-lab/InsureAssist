@@ -41,10 +41,12 @@ router.delete("/api/leads/:id", requireApiKey, (req, res) => {
 });
 
 // Legacy OnlySales public mock endpoint — no auth required
+// Strips PII (email, phone) since this endpoint is unauthenticated
 router.get(["/leads", "/v1/leads"], (req, res) => {
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit || "1", 10)));
   const { data } = store.getLeads({ limit });
-  res.json({ data });
+  const redacted = data.map(({ email, phone, ...safe }) => safe);
+  res.json({ data: redacted });
 });
 
 module.exports = router;

@@ -17,6 +17,13 @@ function createApp() {
   // ── Security headers (helmet) ────────────────────────────────────────────
   app.use(helmet());
 
+  // ── Prevent caching of API responses containing sensitive data ──────────
+  app.use((req, res, next) => {
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Pragma", "no-cache");
+    next();
+  });
+
   // ── Body parsing with hard size cap ─────────────────────────────────────
   app.use(express.json({ limit: "100kb" }));
   app.use(express.urlencoded({ extended: false, limit: "100kb" }));
@@ -44,6 +51,8 @@ function createApp() {
       res.setHeader("Access-Control-Allow-Origin", "*");
     } else if (origin && allowed.includes(origin)) {
       res.setHeader("Access-Control-Allow-Origin", origin);
+      // Vary on Origin so caches don't serve the wrong CORS response
+      res.setHeader("Vary", "Origin");
     }
     res.setHeader(
       "Access-Control-Allow-Headers",
@@ -67,8 +76,10 @@ function createApp() {
   app.use(integrationsRouter);
 
   // ── 404 catch-all ────────────────────────────────────────────────────────
+  // Sanitize the path to avoid reflecting arbitrary user input
   app.use((req, res) => {
-    res.status(404).json({ ok: false, error: `Route ${req.method} ${req.path} not found` });
+    const safePath = req.path.slice(0, 100).replace(/[^\w/.\-]/g, "");
+    res.status(404).json({ ok: false, error: `Route ${req.method} ${safePath} not found` });
   });
 
   // ── Global error handler ─────────────────────────────────────────────────

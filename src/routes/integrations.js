@@ -20,8 +20,10 @@ router.get("/api/integrations/onlysales/status", requireApiKey, (req, res) => {
 });
 
 // POST /api/integrations/onlysales/webhook
+// Logs only safe metadata (event type, ID) — never the full body which may contain PII
 router.post("/api/integrations/onlysales/webhook", requireApiKey, (req, res) => {
-  console.log("Received OnlySales webhook:", JSON.stringify(req.body));
+  const { event, lead_id } = req.body || {};
+  console.log(`Received OnlySales webhook: event=${event || "unknown"} lead_id=${lead_id || "n/a"}`);
   res.json({ ok: true });
 });
 

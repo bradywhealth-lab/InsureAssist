@@ -1,3 +1,5 @@
+const crypto = require("crypto");
+
 /**
  * Optional API key authentication.
  *
@@ -7,6 +9,7 @@
  *   - Authorization: Bearer <key> header
  *
  * When API_KEY is not set, all requests pass through (dev-friendly default).
+ * Uses timing-safe comparison to prevent timing attacks on the key.
  */
 function requireApiKey(req, res, next) {
   const apiKey = process.env.API_KEY;
@@ -17,13 +20,24 @@ function requireApiKey(req, res, next) {
   const fromBearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
   const provided = fromHeader || fromBearer;
 
-  if (!provided || provided !== apiKey) {
+  if (!provided || !timingSafeEqual(provided, apiKey)) {
     return res.status(401).json({
       ok: false,
       error: "Unauthorized: invalid or missing API key",
     });
   }
   next();
+}
+
+/** Constant-time string comparison to prevent timing side-channel attacks. */
+function timingSafeEqual(a, b) {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) {
+    crypto.timingSafeEqual(bufA, bufA);
+    return false;
+  }
+  return crypto.timingSafeEqual(bufA, bufB);
 }
 
 module.exports = { requireApiKey };
