@@ -63,6 +63,13 @@ describe("Tasks & Scheduling API", () => {
       expect(res.status).toBe(200);
       expect(res.body.date).toBe("2024-02-01");
     });
+
+    it("returns 400 for invalid date", async () => {
+      const res = await request(app).get("/api/tasks/daily?date=not-a-date");
+      expect(res.status).toBe(400);
+      expect(res.body.ok).toBe(false);
+      expect(res.body.error).toMatch(/invalid date/i);
+    });
   });
 
   // ── GET /api/tasks/:id ──────────────────────────────────────────────────

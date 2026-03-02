@@ -74,11 +74,14 @@ describe("AI & Insights API", () => {
 
   // ── POST /api/ai/score-all ──────────────────────────────────────────────
   describe("POST /api/ai/score-all", () => {
-    it("scores all leads", async () => {
+    it("scores all leads without pagination limits", async () => {
+      // Verify it scores every lead in the store
+      const leadsRes = await request(app).get("/api/leads?limit=100");
+      const totalLeads = leadsRes.body.total;
       const res = await request(app).post("/api/ai/score-all");
       expect(res.status).toBe(201);
       expect(res.body.ok).toBe(true);
-      expect(res.body.scored).toBeGreaterThanOrEqual(3);
+      expect(res.body.scored).toBe(totalLeads);
       expect(res.body.insights).toBeInstanceOf(Array);
     });
   });

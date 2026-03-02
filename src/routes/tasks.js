@@ -16,7 +16,9 @@ router.get("/api/tasks", requireApiKey, (req, res) => {
 // GET /api/tasks/daily — daily schedule view
 router.get("/api/tasks/daily", requireApiKey, (req, res) => {
   const { date } = req.query;
-  res.json(store.getDailySchedule(date));
+  const schedule = store.getDailySchedule(date);
+  if (!schedule) return res.status(400).json({ ok: false, error: "Invalid date format" });
+  res.json(schedule);
 });
 
 // GET /api/tasks/:id

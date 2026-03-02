@@ -272,6 +272,9 @@ const store = {
     const data = filtered.slice(offset, offset + limit);
     return { data, total, page, limit, pages: Math.ceil(total / limit) || 1 };
   },
+  getAllLeads() {
+    return leads.map((l) => ({ ...l }));
+  },
   getLeadById(id) {
     return leads.find((l) => l.id === id) || null;
   },
@@ -463,6 +466,7 @@ const store = {
   },
   getDailySchedule(dateStr) {
     const targetDate = dateStr ? new Date(dateStr) : new Date();
+    if (isNaN(targetDate.getTime())) return null;
     const dayStart = new Date(targetDate);
     dayStart.setHours(0, 0, 0, 0);
     const dayEnd = new Date(targetDate);

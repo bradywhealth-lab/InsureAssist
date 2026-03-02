@@ -27,7 +27,7 @@ router.post("/api/ai/score/:leadId", requireApiKey, (req, res) => {
 
 // POST /api/ai/score-all — generate AI scores for all leads
 router.post("/api/ai/score-all", requireApiKey, (req, res) => {
-  const { data: allLeads } = store.getLeads({ limit: 1000 });
+  const allLeads = store.getAllLeads();
   const insights = [];
   for (const lead of allLeads) {
     const insight = store.generateLeadScore(lead.id);
@@ -82,7 +82,7 @@ router.get("/api/ai/recommendations/:leadId", requireApiKey, (req, res) => {
 // GET /api/ai/dashboard — AI-powered dashboard summary
 router.get("/api/ai/dashboard", requireApiKey, (req, res) => {
   const analytics = store.getAnalytics();
-  const { data: allLeads } = store.getLeads({ limit: 1000 });
+  const allLeads = store.getAllLeads();
   const tasks = store.getTasks({ status: "pending" });
 
   const hotLeads = allLeads.filter((l) => l.status === "interested" && l.disposition !== "sold");
