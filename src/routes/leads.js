@@ -5,12 +5,12 @@ const store = require("../store");
 
 const router = Router();
 
-// GET /api/leads — paginated, filterable by status or campaign_id
+// GET /api/leads — paginated, filterable by status, campaign_id, disposition, or tag
 router.get("/api/leads", requireApiKey, (req, res) => {
   const page = Math.max(1, parseInt(req.query.page || "1", 10));
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit || "10", 10)));
-  const { status, campaign_id } = req.query;
-  res.json(store.getLeads({ page, limit, status, campaign_id }));
+  const { status, campaign_id, disposition, tag } = req.query;
+  res.json(store.getLeads({ page, limit, status, campaign_id, disposition, tag }));
 });
 
 // GET /api/leads/:id
