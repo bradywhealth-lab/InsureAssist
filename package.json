@@ -1,7 +1,7 @@
 {
-  "name": "insureassist-mock-api",
-  "version": "2.0.0",
-  "description": "Mock API server for OnlySales and integration endpoints",
+  "name": "insureassist",
+  "version": "3.0.0",
+  "description": "InsureAssist CRM — AI-powered personal assistant for insurance lead management, automated outreach, scheduling, and marketing",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

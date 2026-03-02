@@ -10,6 +10,15 @@ const preferencesRouter = require("./routes/preferences");
 const leadsRouter = require("./routes/leads");
 const campaignsRouter = require("./routes/campaigns");
 const integrationsRouter = require("./routes/integrations");
+const tagsRouter = require("./routes/tags");
+const contactsRouter = require("./routes/contacts");
+const tasksRouter = require("./routes/tasks");
+const messagesRouter = require("./routes/messages");
+const followupsRouter = require("./routes/followups");
+const csvRouter = require("./routes/csv");
+const scrapingRouter = require("./routes/scraping");
+const marketingRouter = require("./routes/marketing");
+const aiRouter = require("./routes/ai");
 
 function createApp() {
   const app = express();
@@ -65,6 +74,15 @@ function createApp() {
   app.use(leadsRouter);
   app.use(campaignsRouter);
   app.use(integrationsRouter);
+  app.use(tagsRouter);
+  app.use(contactsRouter);
+  app.use(tasksRouter);
+  app.use(messagesRouter);
+  app.use(followupsRouter);
+  app.use(csvRouter);
+  app.use(scrapingRouter);
+  app.use(marketingRouter);
+  app.use(aiRouter);
 
   // ── 404 catch-all ────────────────────────────────────────────────────────
   app.use((req, res) => {
